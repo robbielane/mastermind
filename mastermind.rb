@@ -41,13 +41,13 @@ def determine_difficulty_rating
     puts "(b)eginner, (i)ntermediate, or (a)dvanced"
     answer = gets.chomp.downcase
 
-    if answer == 'b'
+    if answer.start_with?('b')
       difficulty = 4
       break
-    elsif answer == 'i'
+    elsif answer.start_with?('i')
       difficulty = 6
       break
-    elsif answer == 'a'
+    elsif answer.start_with?('a')
       difficulty = 8
       break
     else
