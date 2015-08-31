@@ -17,7 +17,9 @@ def initalize_game(difficulty_rating)
 end
 
 def display_instructions
-  puts ''
+  puts "A random string of colors will be generated"
+  puts "(e.g. 'RRGB' - 'Red, Red, Green, Blue')."
+  puts "Your job is to correctly guess the string in as few guesses as possible."
 end
 
 def display_game_start(difficulty_rating)
