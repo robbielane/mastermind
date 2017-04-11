@@ -2,6 +2,9 @@ COLORS = ["r", "g", "b", "y"]
 
 @winning_combo = []
 
+@guess_counter = 0
+
+
 def start
   puts "Welcome to MASTERMIND\n"
   options
@@ -17,7 +20,7 @@ def start_input
   if user_input == "p" || user_input == "play"
     start_game
   elsif user_input == "i" || user_input == "instructions"
-    instructions
+    display_instructions
   elsif user_input == "q" || user_input == "quit"
     quit
   else
@@ -26,49 +29,102 @@ def start_input
 end
 
 def start_game
-  generate_winning_combo
+  initialize_game
   puts "I have generated a beginner sequence with four elements made up of: (r)ed, (g)reen, (b)lue, and (y)ellow. Use (q)uit at any time to end the game."
   take_a_guess
 end
 
-def instructions
-  puts "These are your instructions"
+def display_instructions
+  puts "\nA random string of colors will be generated"
+  puts "(e.g. 'RRGB' - 'Red, Red, Green, Blue')."
+  puts "Your job is to correctly guess the string in as few guesses as possible."
 end
 
 def quit
   puts "bye bye"
+  exit
+end
+
+def quit_or_cheat(user_input)
+  if user_input == "q" ||  user_input == "quit"
+    quit
+  elsif user_input == "c" || user_input == "cheat"
+    puts "WINNING COMBO: #{@winning_combo.join('').upcase}"
+    take_a_guess
+  end
 end
 
 def take_a_guess
   puts "\nWhat's your guess?"
   user_input = gets.chomp.downcase
-  check_length(user_input)
+  quit_or_cheat(user_input)
+  if valid_input(user_input)
+    @guess_counter += 1
+    check_guess(valid_input)
+  else
+    take_a_guess
+  end
 end
 
 def check_guess(user_input)
-  puts "WINNING COMBO: #{@winning_combo.join('')}" # remove me!!!!
-
   if user_input == @winning_combo.join('')
     puts 'Winner!!!!!'
+    puts "Congratulations! You guessed the sequence '#{@winning_combo.join("").upcase}' in #{@guess_counter} guesses"
+    puts "\nDo you want to (p)lay again or (q)uit?"
+    start_input
   else
+    feedback(user_input)
     take_a_guess
   end
 end
 
-def check_length(user_input)
+def valid_input(user_input)
   if user_input.length < 4
     puts "guess is too short, must be four characters"
-    take_a_guess
+    false
   elsif user_input.length > 4
     puts "guess is too long. must be four characters"
-    take_a_guess
+    false
   else
-    check_guess(user_input)
+    true
   end
 end
 
-def generate_winning_combo
+def initialize_game
+  @winning_combo = []
+  @guess_counter = 0
   4.times { @winning_combo << COLORS.sample }
+end
+
+def feedback(user_input)
+  puts elements_correct(user_input)
+  puts guess_count
+  puts postions_correct(user_input)
+end
+
+def guess_count
+  "You have taken #{@guess_counter} guesses"
+end
+
+def elements_correct(user_input)
+  winning_combo_dup = @winning_combo.dup
+  user_input.split('').each do |l|
+    if winning_combo_dup.include?(l)
+      winning_combo_dup.delete_at(winning_combo_dup.index(l) || winning_combo_dup.length)
+    end
+  end
+  num_correct = user_input.length - winning_combo_dup.length
+  "'#{user_input}' has #{num_correct} of the correct elements"
+end
+
+def postions_correct(user_input)
+  num_correct = 0
+  @winning_combo.each_with_index do |l, i|
+    if user_input[i] == @winning_combo[i]
+      num_correct += 1
+    end
+  end
+  "You have #{num_correct} in the correct positions"
 end
 
 start
