@@ -1,3 +1,4 @@
+# this is a comment
 FOUR_COLORS = %w(R G B Y)
 FIVE_COLORS = %w(R G B Y O)
 SIX_COLORS = %w(R G B Y O M)
