@@ -1,3 +1,4 @@
+# this is a comment
 FOUR_COLORS = %w(R G B Y)
 FIVE_COLORS = %w(R G B Y O)
 SIX_COLORS = %w(R G B Y O M)
@@ -16,137 +17,103 @@ def initalize_game(difficulty_rating)
   end
 end
 
+def start_game
+  initialize_game
+  puts "I have generated a beginner sequence with four elements made up of: (r)ed, (g)reen, (b)lue, and (y)ellow. Use (q)uit at any time to end the game."
+  take_a_guess
+end
+
 def display_instructions
-  puts "A random string of colors will be generated"
+  puts "\nA random string of colors will be generated"
   puts "(e.g. 'RRGB' - 'Red, Red, Green, Blue')."
   puts "Your job is to correctly guess the string in as few guesses as possible."
 end
 
-def display_game_start(difficulty_rating)
-  puts "\nI have generated a sequence with #{difficulty_rating} elements made up of:"
-  if difficulty_rating == 4
-    puts "(r)ed, (g)reen, (b)lue, and (y)ellow. Use (q)uit at any time to end the game."
-  elsif difficulty_rating == 6
-    puts "(r)ed, (g)reen, (b)lue, (y)ellow, and (o)range. Use (q)uit at any time to end the game."
-  else
-    puts "(r)ed, (g)reen, (b)lue, (y)ellow, (o)range, and (m)agenta. Use (q)uit at any time to end the game."
+def quit
+  puts "bye bye"
+  exit
+end
+
+def quit_or_cheat(user_input)
+  if user_input == "q" ||  user_input == "quit"
+    quit
+  elsif user_input == "c" || user_input == "cheat"
+    puts "WINNING COMBO: #{@winning_combo.join('').upcase}"
+    take_a_guess
   end
+end
+
+def take_a_guess
   puts "\nWhat's your guess?"
-end
-
-def determine_difficulty_rating
-  difficulty = 0
-  loop do
-    puts "\nWhat difficulty level would you like to play?"
-    puts "(b)eginner, (i)ntermediate, or (a)dvanced"
-    answer = gets.chomp.downcase
-
-    if answer.start_with?('b')
-      difficulty = 4
-      break
-    elsif answer.start_with?('i')
-      difficulty = 6
-      break
-    elsif answer.start_with?('a')
-      difficulty = 8
-      break
-    else
-      puts "Please enter a valid selection"
-      puts "(b)eginner, (i)ntermediate, or (a)dvanced"
-    end
+  user_input = gets.chomp.downcase
+  quit_or_cheat(user_input)
+  if valid_input(user_input)
+    @guess_counter += 1
+    check_guess(valid_input)
+  else
+    take_a_guess
   end
-  difficulty
 end
 
-def verify_input(input, difficulty_rating)
-  if input.length <= (difficulty_rating - 1)
-    puts "Too short! -- Enter #{difficulty_rating} characters"
-  elsif input.length > difficulty_rating
-    puts "Too long! -- Enter #{difficulty_rating} characters"
-  elsif input.length == difficulty_rating
+def check_guess(user_input)
+  if user_input == @winning_combo.join('')
+    puts 'Winner!!!!!'
+    puts "Congratulations! You guessed the sequence '#{@winning_combo.join("").upcase}' in #{@guess_counter} guesses"
+    puts "\nDo you want to (p)lay again or (q)uit?"
+    start_input
+  else
+    feedback(user_input)
+    take_a_guess
+  end
+end
+
+def valid_input(user_input)
+  if user_input.length < 4
+    puts "guess is too short, must be four characters"
+    false
+  elsif user_input.length > 4
+    puts "guess is too long. must be four characters"
+    false
+  else
     true
   end
 end
 
-def display_feedback(guess, secret, count)
-  position_correct = 0
-  elements_correct = 0
-  guess_temp = guess.map { |color| color }
-
-  secret.each do |secret_color|
-    if guess_temp.include?(secret_color)
-      elements_correct += 1
-      guess_temp.delete_at(guess_temp.find_index(secret_color))
-    end
-  end
-
-  guess.each_with_index do |guess_color, index|
-    if guess_color == secret[index]
-      position_correct += 1
-    end
-  end
-
-  puts "'#{guess.join.upcase}' has #{elements_correct} of the correct elements"
-  puts "with #{position_correct} in the correct positions."
-  puts "You've taken #{count} guess" if count == 1
-  puts "You've taken #{count} guesses" if count > 1
-end
-intro = %q{
-                       WELCOME TO
-     __  ______   _________________  __  ________  _____
-    /  |/  / _ | / __/_  __/ __/ _ \/  |/  /  _/ |/ / _ \
-   / /|_/ / __ |_\ \  / / / _// , _/ /|_/ // //    / // /
-  /_/  /_/_/ |_/___/ /_/ /___/_/|_/_/  /_/___/_/|_/____/
-}
-
-puts intro
-loop do
-  puts "\nWould you like to (p)lay, read the (i)nstructions, or (q)uit?"
-  answer = gets.chomp.downcase
-
-  if answer.start_with?('p')
-    break
-  elsif answer.start_with?('i')
-    display_instructions
-  elsif answer.start_with?('q')
-    exit
-  end
+def initialize_game
+  @winning_combo = []
+  @guess_counter = 0
+  4.times { @winning_combo << COLORS.sample }
 end
 
-loop do
-  difficulty = determine_difficulty_rating
-  display_game_start(difficulty)
-  board = initalize_game(difficulty)
-  time_start = Time.new
-  guess_counter = 0
+def feedback(user_input)
+  puts elements_correct(user_input)
+  puts guess_count
+  puts postions_correct(user_input)
+end
 
-  loop do
-    user_guess = gets.chomp.upcase.chars
+def guess_count
+  "You have taken #{@guess_counter} guesses"
+end
 
-    if user_guess == board
-      guess_counter += 1
-      puts "YOU WIN!!"
-      break
-    elsif user_guess.include?('Q')
-      exit
-    elsif user_guess.include?('C')
-      puts board.join.downcase
-    elsif verify_input(user_guess, difficulty)
-      guess_counter += 1
-      display_feedback(user_guess, board, guess_counter)
-    else
-      puts "Guess again"
+def elements_correct(user_input)
+  winning_combo_dup = @winning_combo.dup
+  user_input.split('').each do |l|
+    if winning_combo_dup.include?(l)
+      winning_combo_dup.delete_at(winning_combo_dup.index(l) || winning_combo_dup.length)
     end
   end
-
-  time_end = Time.new
-  time = time_end - time_start
-
-  puts "Congratulations! You guessed the sequence '#{board.join}'"
-  puts "in #{guess_counter} guesses over #{Time.at(time).utc.strftime("%M")} minutes, #{Time.at(time).utc.strftime("%S")} seconds."
-  puts "\nDo you want to (p)lay again or (q)uit?"
-  answer = gets.chomp.downcase
-  if answer.start_with?('q')
-    break
-  end
+  num_correct = user_input.length - winning_combo_dup.length
+  "'#{user_input}' has #{num_correct} of the correct elements"
 end
+
+def postions_correct(user_input)
+  num_correct = 0
+  @winning_combo.each_with_index do |l, i|
+    if user_input[i] == @winning_combo[i]
+      num_correct += 1
+    end
+  end
+  "You have #{num_correct} in the correct positions"
+end
+
+start
